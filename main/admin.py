@@ -61,13 +61,13 @@ class TenantAdmin(admin.ModelAdmin):
         PaymentInline,
     ]
     readonly_fields = ('property_link',)
-
+    #formfield_overrides = {models.TextField: {'widget': Textarea(attrs={'rows': 1,'cols': 40,'style': 'height: 1em;'})},}
     def property_link(self, obj):
         url = urlresolvers.reverse(
             'admin:main_property_change', args=(obj.property.id,))
         return format_html(u'<a href={}>{}</a>', mark_safe(url), obj.property)
     property_link.short_description = _('link to the property')
-
+    
 
 # This is a hack to have 2 displays for the tenants
 class TenantReminders(models.Tenant):
