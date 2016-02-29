@@ -10,7 +10,13 @@ def tenants(request):
     tenants = (
         Tenant.objects.all()
         .prefetch_related('reminder_set'))
+
+    overall_balance = 0.0
+
     for t in tenants:
+
+        overall_balance = overall_balance +  t.balance()
+
         rounded_trend = [round(v, 2) for v in t.trend()]
         current_trend = rounded_trend[-1]
         float_rent = float(t.rent())
@@ -36,7 +42,7 @@ def tenants(request):
             "reminder_css": reminder_css,
             "reminders_count": reminders_count
         })
-    context = {'tenants': result}
+    context = {'tenants': result, 'o_balance' : overall_balance}
     return render(request, 'main/tenants.html', context)
 
 
