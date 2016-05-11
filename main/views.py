@@ -12,10 +12,13 @@ def tenants(request):
         .prefetch_related('reminder_set'))
 
     overall_balance = 0.0
+    #last_payment_date_list = []
 
     for t in tenants:
 
         overall_balance = overall_balance +  t.balance()
+        #last_payment_date_list.append(t.last_payment_date)
+
 
         rounded_trend = [round(v, 2) for v in t.trend()]
         current_trend = rounded_trend[-1]
@@ -42,7 +45,8 @@ def tenants(request):
             "reminder_css": reminder_css,
             "reminders_count": reminders_count
         })
-    context = {'tenants': result, 'o_balance' : overall_balance}
+    #last_payment_entry = max(last_payment_date_list)
+    context = {'tenants': result, 'o_balance' : overall_balance}#, 'l_payment': last_payment_entry}
     return render(request, 'main/tenants.html', context)
 
 

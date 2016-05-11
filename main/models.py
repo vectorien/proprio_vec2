@@ -8,6 +8,7 @@ from datetime import date, timedelta
 from calendar import monthrange
 from collections import namedtuple, deque, Counter
 import itertools
+import fnmatch
 from operator import attrgetter
 from django.forms import Textarea
 
@@ -136,6 +137,9 @@ class Tenant(models.Model):
         if result is None:
             result = 0
         return result
+
+    #def last_payment_date(self):
+     #   return max([c.date for c in self.cashflows() if fnmatch.fnmatch(str(c.description), _('payment')+'*') == True])
 
 # Translators: This is the balance of the tenant's payments
     balance.short_description = _("balance")
