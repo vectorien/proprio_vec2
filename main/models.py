@@ -138,8 +138,8 @@ class Tenant(models.Model):
             result = 0
         return result
 
-    #def last_payment_date(self):
-     #   return max([c.date for c in self.cashflows() if fnmatch.fnmatch(str(c.description), _('payment')+'*') == True])
+    def last_payment_date(self):
+        return None#max([c.date for c in self.cashflows() if fnmatch.fnmatch(unicode(c.description), 'payment*') == True])
 
 # Translators: This is the balance of the tenant's payments
     balance.short_description = _("balance")
