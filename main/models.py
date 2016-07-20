@@ -2,6 +2,7 @@
 from django.db import models
 from django.db.models import Max
 from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext_noop as _noop
 from django.utils.translation import ungettext
 from django.core.validators import MinValueValidator, ValidationError
 from datetime import date, timedelta
@@ -122,7 +123,7 @@ class Tenant(models.Model):
         for c in date_sorted:
             balance += c.amount
             result.append(
-                CashflowAndBalance(c.date, c.amount, c.description, balance))
+                CashflowAndBalance(c.date, c.amount, c.description,c.tag, balance))
         return reversed(result)
 
     def trend(self):
@@ -139,8 +140,10 @@ class Tenant(models.Model):
         return result
 
     def last_payment_date(self):
-        return None#max([c.date for c in self.cashflows() if fnmatch.fnmatch(unicode(c.description), 'payment*') == True])
-
+        try:
+            return max([c.date for c in self.cashflows() if c.tag == 'p'])
+        except:
+            return None
 # Translators: This is the balance of the tenant's payments
     balance.short_description = _("balance")
 
@@ -200,6 +203,7 @@ class RentRevision(models.Model):
     start_date = models.DateField(_("start date"))
     end_date = models.DateField(
         _("end date"),blank=True, null=True)
+    tag = 'r'
     rent = models.DecimalField(
         _("monthly rent"), max_digits=7, decimal_places=2,
         validators=[MinValueValidator(0)])
@@ -222,6 +226,7 @@ class Payment(models.Model):
         _("description"), max_length=1024)
     tenant = models.ForeignKey(Tenant, verbose_name=Tenant._meta.verbose_name)
     date = models.DateField(_("date"))
+    tag = 'p'
     amount = models.DecimalField(
         _("amount"), max_digits=7, decimal_places=2,
         validators=[MinValueValidator(0)])
@@ -240,6 +245,7 @@ class Fee(models.Model):
     description = models.CharField(_("description"), max_length=255)
     tenant = models.ForeignKey(Tenant, verbose_name=Tenant._meta.verbose_name)
     date = models.DateField(_("date"))
+    tag = 'f'
     amount = models.DecimalField(_("amount"), max_digits=7, decimal_places=2)
 
     class Meta:
@@ -251,9 +257,9 @@ class Fee(models.Model):
         return u"{} - {}".format(self.description, self.date)
 
 
-Cashflow = namedtuple('Cashflow', ['date', 'amount', 'description'])
+Cashflow = namedtuple('Cashflow', ['date', 'amount', 'description', 'tag'])
 CashflowAndBalance = namedtuple('Cashflow',
-                                ['date', 'amount', 'description', 'balance'])
+                                ['date', 'amount', 'description', 'tag','balance'])
 
 
 def payments_to_cashflows(date, payments):
@@ -264,11 +270,11 @@ def payments_to_cashflows(date, payments):
             d = _('payment "%(description)s"') % {'description': p.description}
         else:
             d = _('payment')
-        yield Cashflow(p.date, float(p.amount), d)
+        yield Cashflow(p.date, float(p.amount), d, p.tag)
 
 
 def fees_to_cashflows(date, fees):
-    return [Cashflow(x.date, -float(x.amount), x.description)
+    return [Cashflow(x.date, -float(x.amount), x.description, x.tag)
             for x in fees if x.date <= date]
 
 def revision_to_cashflows(rev, end_date):
@@ -299,9 +305,9 @@ def revision_to_cashflows(rev, end_date):
         date_info = date(d[0],d[1],1)
         #if full month
         if d[3] == True:
-            result.append(Cashflow(date_info, -float(rev.rent), _('RENT ') ))
+            result.append(Cashflow(date_info, -float(rev.rent), _('RENT '),rev.tag ))
             if rev.provision != 0:
-                result.append(Cashflow(date_info, -float(rev.provision), _('PROVISION ') ))
+                result.append(Cashflow(date_info, -float(rev.provision), _('PROVISION '),rev.tag ))
 
         #if partial month, divide by days of month rented
         else:
@@ -315,7 +321,7 @@ def revision_to_cashflows(rev, end_date):
 
             result.append(Cashflow(date_info, -round(partialrent,2),\
              ungettext("RENT for %(day)s day in partial month",\
-                "RENT for %(day)s days in in partial month", rented_days) % {'day': str(rented_days)}))
+                "RENT for %(day)s days in in partial month", rented_days) % {'day': str(rented_days)},rev.tag))
             
             if rev.provision != 0:
                 #partialprovision = round((rev.provision/daysinmonth*rented_days),2)
@@ -323,7 +329,7 @@ def revision_to_cashflows(rev, end_date):
 
                 result.append(Cashflow(date_info, -round(partialprovision,2), \
                     ungettext("PROVISION for %(day)s day in partial month",\
-                        "PROVISION for %(day)s days in in partial month", rented_days) % {'day': str(rented_days)}))
+                        "PROVISION for %(day)s days in in partial month", rented_days) % {'day': str(rented_days)},rev.tag))
     return result
 
 

@@ -17,7 +17,8 @@ def tenants(request):
     for t in tenants:
 
         overall_balance = overall_balance +  t.balance()
-        last_payment_date_list.append(t.last_payment_date())
+        if t.last_payment_date() is not None:
+            last_payment_date_list.append(t.last_payment_date())
 
 
         rounded_trend = [round(v, 2) for v in t.trend()]
@@ -45,7 +46,7 @@ def tenants(request):
             "reminder_css": reminder_css,
             "reminders_count": reminders_count
         })
-    last_payment_entry = ((last_payment_date_list))
+    last_payment_entry = (max(last_payment_date_list))
     context = {'tenants': result, 'o_balance' : overall_balance, 'l_payment': last_payment_entry}
     return render(request, 'main/tenants.html', context)
 
