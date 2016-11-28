@@ -103,6 +103,7 @@ class Tenant(models.Model):
         validators=[MinValueValidator(0)], default=0)
     contact_info = models.TextField(_("contact info"), blank=True)
     notes = models.TextField(_("notes"), blank=True)
+    active = models.BooleanField(_("Active tenancy"), default=True)
 
     def cashflows(self):
         if self.tenancy_end_date:
