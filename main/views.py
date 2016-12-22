@@ -46,7 +46,8 @@ def tenants(request):
             "reminder_css": reminder_css,
             "reminders_count": reminders_count
         })
-    last_payment_entry = (max(last_payment_date_list))
+    last_payment_date_list.sort(key=lambda x: x[0])
+    last_payment_entry = (last_payment_date_list[-1][0]).strftime('%d. %b %Y') +', '+ str(last_payment_date_list[-1][1])#(max(last_payment_date_list))
     context = {'tenants': result, 'o_balance' : overall_balance, 'l_payment': last_payment_entry}
     return render(request, 'main/tenants.html', context)
 

@@ -142,7 +142,8 @@ class Tenant(models.Model):
 
     def last_payment_date(self):
         try:
-            return max([c.date for c in self.cashflows() if c.tag == 'p'])
+            result = (max([c.date for c in self.cashflows() if c.tag == 'p']), self.name)
+            return result
         except:
             return None
 # Translators: This is the balance of the tenant's payments

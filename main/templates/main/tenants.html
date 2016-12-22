@@ -12,7 +12,8 @@
 {% endblock %}
 {% block content %}
 <!---->
-{% trans "last payment entry"|title %} ({{l_payment}})
+
+<h1>{% trans "List of active or not balanced tenants"|title %}</h1>{% trans "last payment entry"|title %}: {{l_payment}}
 	<table class="table table-condensed table-hover sortable">
 		<thead>
 			<tr>
@@ -25,7 +26,7 @@
 		</thead>
 		<tbody>
 		{% for t in tenants %}
-			{% if t.tenant.active %}
+			{% if t.tenant.active or t.tenant.balance != 0.0 %}
 			<tr class="{{ t.css }}">
 				<td>
 					<span class="glyphicon glyphicon-chevron-right"></span>
@@ -41,8 +42,6 @@
 					<a href="{% url 'admin:main_tenantreminders_change' t.tenant.id %}" class="btn btn-default reminders {{t.reminder_css}}"><span class="glyphicon glyphicon-bullhorn"></span> {% trans "reminders"|title %} - {{t.reminders_count}}</a>
 			       	</td>
 			</tr>
-			{% else %}
-			<p>Blabla</p>
 			{% endif %}
 		{% endfor %}
 		</tbody>
