@@ -314,8 +314,11 @@ def revision_to_cashflows(rev, end_date):
         #if partial month, divide by days of month rented
         else:
             #generate start date of rent/provision
-            if start_date != date_info and start_date.month == date_info.month:
-                date_info = start_date
+            # if start_date != date_info and start_date.month == date_info.month:
+            #     date_info = start_date
+            #
+			#Cashflow = namedtuple('Cashflow', ['date', 'amount', 'description', 'tag'])
+            
             daysinmonth = monthrange(date_info.year, date_info.month)[1]
             rented_days = d[2]
             #partialrent = round((rev.rent/daysinmonth*rented_days),2)
